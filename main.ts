@@ -1,22 +1,32 @@
 sprites.onCreated(SpriteKind.Player, function (sprite) {
-    let randomC = randint(1, 8)
-    let randomR = randint(1, 6)
-    if (tilesSprites.length > 0) {
-        let success = false
-        while (!(success)) {
-            for (let sprite of tilesSprites) {
-                if (sprite.tilemapLocation().column != randomC && sprite.tilemapLocation().row != randomR) {
-                    success = true
-                }
-            }
-            randomC = randint(1, 8)
-            randomR = randint(1, 6)
-        }
+    let freeCells: number[] = []
+    let tilesCells: number[] = []
+
+    for (let sprite of tilesSprites) {
+        tilesCells.push((sprite.tilemapLocation().column - 1) + (sprite.tilemapLocation().row - 1) * 8)
+        console.log("col: " + sprite.tilemapLocation().column + "; row:" + sprite.tilemapLocation().row)
     }
+
+    for (let i0 = 0; i0 < 48; i0++) {
+        freeCells.push(i0)
+    }
+
+    for (let sprite of tilesSprites) {
+        let spriteCell = (sprite.tilemapLocation().column - 1 ) + 8 * (sprite.tilemapLocation().row - 1)
+        console.log(spriteCell)
+        freeCells.removeAt(freeCells.indexOf(spriteCell))
+    }
+
+    let freeCell = freeCells._pickRandom()
+    freeCells.removeAt(freeCells.indexOf(freeCell))
+
+    let freeCol = freeCell % 8 + 1
+    let freeRow = Math.floor(freeCell / 8) + 1
+
     sprites.setDataBoolean(sprite, "updated", false)
     sprites.setDataNumber(sprite, "rank", 0)
-    sprites.setDataNumber(sprite, "col", randomC)
-    sprites.setDataNumber(sprite, "row", randomR)
+    tiles.placeOnTile(sprite, tiles.getTileLocation(freeCol, freeRow))
+
 })
 
 let tilesSprites: Sprite[] = []
@@ -37,8 +47,7 @@ let tilesImages = [
 scene.centerCameraAt(80, 64)
 tiles.setCurrentTilemap(tilemap`level1`)
 
-for (let i = 0; i < 48; i++) {
-    tilesSprites.push(sprites.create(img`
+tilesSprites.push(sprites.create(img`
     . . . . . . . . . . . . . . . . 
     . . . . . . . . . . . . . . . . 
     . . . . . . . . . . . . . . . . 
@@ -57,14 +66,30 @@ for (let i = 0; i < 48; i++) {
     . . . . . . . . . . . . . . . . 
     `, SpriteKind.Player))
 
-}
+tilesSprites.push(sprites.create(img`
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    `, SpriteKind.Player))
 
 game.onUpdate(function () {
     for (let sprite of tilesSprites) {
         if (!(sprites.readDataBoolean(sprite, "updated"))) {
             sprite.setImage(tilesImages[sprites.readDataNumber(sprite, "rank")])
             sprites.setDataBoolean(sprite, "updated", true)
-            tiles.placeOnTile(sprite, tiles.getTileLocation(sprites.readDataNumber(sprite, "col"), sprites.readDataNumber(sprite, "row")))
         }
         if (sprites.readDataNumber(sprite, "rank") == 10) {
             pause(500)
