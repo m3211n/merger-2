@@ -8,7 +8,6 @@
         "Color Fading": "github:jwunderl/pxt-color#v0.2.2"
     },
     "files": [
-        "main.blocks",
         "main.ts",
         "README.md",
         "assets.json",
@@ -27,5 +26,5 @@
     "supportedTargets": [
         "arcade"
     ],
-    "preferredEditor": "blocksprj"
+    "preferredEditor": "tsprj"
 }
