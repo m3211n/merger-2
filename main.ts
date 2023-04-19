@@ -2,11 +2,6 @@ sprites.onCreated(SpriteKind.Player, function (sprite) {
     let freeCells: number[] = []
     let tilesCells: number[] = []
 
-    for (let sprite of tilesSprites) {
-        tilesCells.push((sprite.tilemapLocation().column - 1) + (sprite.tilemapLocation().row - 1) * 8)
-        console.log("col: " + sprite.tilemapLocation().column + "; row:" + sprite.tilemapLocation().row)
-    }
-
     for (let i0 = 0; i0 < 48; i0++) {
         freeCells.push(i0)
     }
