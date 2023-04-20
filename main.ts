@@ -2,12 +2,12 @@ sprites.onCreated(SpriteKind.Player, function (sprite) {
     let freeCells: number[] = []
     let tilesCells: number[] = []
 
-    for (let i0 = 0; i0 < 48; i0++) {
+    for (let i0 = 0; i0 < gridW * gridH; i0++) {
         freeCells.push(i0)
     }
 
     for (let sprite of tilesSprites) {
-        let spriteCell = (sprite.tilemapLocation().column - 1 ) + 8 * (sprite.tilemapLocation().row - 1)
+        let spriteCell = (sprite.tilemapLocation().column ) + gridW * (sprite.tilemapLocation().row - 1)
         freeCells.removeAt(freeCells.indexOf(spriteCell))
     }
 
@@ -15,24 +15,39 @@ sprites.onCreated(SpriteKind.Player, function (sprite) {
 
     sprites.setDataBoolean(sprite, "updated", false)
     sprites.setDataNumber(sprite, "rank", 0)
-    grid.place(sprite, tiles.getTileLocation(freeCell % 8 + 1, Math.floor(freeCell / 8) + 1))
+    grid.place(sprite, tiles.getTileLocation(freeCell % gridW, Math.floor(freeCell / gridW) + 1))
 })
 
 sprites.onDestroyed(SpriteKind.Player, function (sprite) {
 
 })
 
+function seed(count: number) {
+    for (let i = 0; i < count; i ++) {
+        tilesSprites.push(sprites.create(img`
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+        `, SpriteKind.Player))
+    }
+}
+
 function mergeTiles(tiles: Sprite[], reversed: boolean) {
-    let cIndex = 0
-    for (let i = 0; i <= tiles.length - 2; i++) {       // assuming that indexes in the colSprites array start with 0
-        switch (reversed) {
-            case false:
-                cIndex = i
-                break
-            case true:
-                cIndex = tiles.length - i - 1
-                break
-        }
+    for (let i = 0; i < tiles.length - 1; i++) {       // assuming that indexes in the colSprites array start with 0
+        let cIndex = reversed ? tiles.length - i : i
         if (sprites.readDataNumber(tiles[cIndex], "rank") == sprites.readDataNumber(tiles[cIndex + 1], "rank")) {
             sprites.changeDataNumberBy(tiles[cIndex], "rank", 1)
             sprites.setDataBoolean(tiles[cIndex], "updated", false)
@@ -41,19 +56,16 @@ function mergeTiles(tiles: Sprite[], reversed: boolean) {
     }
 }
 
-function moveTiles(tiles: Sprite[], reversed: boolean, horizontal: boolean) {
+function moveTiles(tiles: Sprite[], reversed: boolean, vertical: boolean) {
     let tilesMoved: boolean = false
-    let i = 1
-    let diff = gridH
-    if (!horizontal) { diff = gridW }
-    if (reversed) { i = diff - tiles.length + 1 }
-
+    let pos = reversed ? (vertical ? gridH : gridW) - tiles.length + (vertical ? 0 : 1) : (vertical ? 1 : 0)            // starting point to place tiles
     for (let sprite of tiles) {
-        let tmpPos = sprite.tilemapLocation().row
-        if (!horizontal) { tmpPos = sprite.tilemapLocation().column }
-        if (tmpPos != i) { tilesMoved = true }
-        if (horizontal) { grid.move(sprite, 0, i - tmpPos) } else { grid.move(sprite, i - tmpPos, 0) }
-        i++
+        let tmpPos = vertical ? sprite.tilemapLocation().row : sprite.tilemapLocation().column 
+        if (tmpPos != pos) { 
+            tilesMoved = true 
+            grid.move(sprite,  (vertical ? 0 : pos - tmpPos), (vertical ? pos - tmpPos : 0))
+        }
+        pos++
     }
     return tilesMoved
 }
@@ -103,7 +115,7 @@ function changeGravityVector(vector: number) {
     }
 }
 let tilesSprites: Sprite[] = []
-let gridW = 8
+let gridW = 10
 let gridH = 6
 
 let tilesImages = [
@@ -119,47 +131,13 @@ let tilesImages = [
     assets.image`tile_9`
 ]
 
-scene.centerCameraAt(80, 64)
-tiles.setCurrentTilemap(tilemap`level1`)
+tiles.setCurrentTilemap(tilemap`level2`)
 info.setScore(0)
+info.setBorderColor(0)
+info.setBackgroundColor(0)
+info.setFontColor(10)
 
-tilesSprites.push(sprites.create(img`
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    `, SpriteKind.Player))
-
-tilesSprites.push(sprites.create(img`
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    `, SpriteKind.Player))
+seed(4)
 
 game.onUpdateInterval(10, function() {
     for (let sprite of tilesSprites) {
