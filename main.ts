@@ -46,12 +46,15 @@ function seed(count: number) {
 }
 
 function mergeTiles(tiles: Sprite[], reversed: boolean) {
-    for (let i = 0; i < tiles.length - 1; i++) {       // assuming that indexes in the colSprites array start with 0
+    for (let i = 0; i < tiles.length - 1; i++)
+    {
         let cIndex = reversed ? tiles.length - i : i
-        if (sprites.readDataNumber(tiles[cIndex], "rank") == sprites.readDataNumber(tiles[cIndex + 1], "rank")) {
+        let nextIndex = reversed ? cIndex - 1 : cIndex + 1
+        if (sprites.readDataNumber(tiles[cIndex], "rank") == sprites.readDataNumber(tiles[nextIndex], "rank")) 
+        {
             sprites.changeDataNumberBy(tiles[cIndex], "rank", 1)
             sprites.setDataBoolean(tiles[cIndex], "updated", false)
-            sprites.destroy(tiles[cIndex + 1])
+            sprites.destroy(tiles[nextIndex])
         }
     }
 }
