@@ -41,17 +41,18 @@ function mergeTiles(tiles: Sprite[], reversed: boolean) {
     }
 }
 
-function moveTiles(tiles: Sprite[], reversed: boolean, hor: boolean) {
+function moveTiles(tiles: Sprite[], reversed: boolean, horizontal: boolean) {
     let tilesMoved: boolean = false
     let i = 1
+    let diff = gridH
+    if (!horizontal) { diff = gridW }
+    if (reversed) { i = diff - tiles.length + 1 }
+
     for (let sprite of tiles) {
-        let tmpR = sprite.tilemapLocation().row
-        if (tmpR != i) { tilesMoved = true }
-        if (hor) {
-            grid.move(sprite, 0, i - tmpR)
-        } else {
-            grid.move(sprite, i - tmpR, 0)
-        }
+        let tmpPos = sprite.tilemapLocation().row
+        if (!horizontal) { tmpPos = sprite.tilemapLocation().column }
+        if (tmpPos != i) { tilesMoved = true }
+        if (horizontal) { grid.move(sprite, 0, i - tmpPos) } else { grid.move(sprite, i - tmpPos, 0) }
         i++
     }
     return tilesMoved
@@ -61,40 +62,23 @@ function changeGravityVector(vector: number) {
     let tilesMoved: boolean = false
     switch (vector) {
         case 0:             // vector is UP
-            for (let c = 1; c <= gridW; c++) {
-                mergeTiles(grid.colSprites(c), false)
-            }
-            for (let c = 1; c <= gridW; c++) {
-                let r = 1
-                for (let sprite of grid.colSprites(c)) {
-                    let tmpC = sprite.tilemapLocation().column
-                    let tmpR = sprite.tilemapLocation().row
-                    if (tmpC != c || tmpR != r) { tilesMoved = true }        
-                    grid.place(sprite, tiles.getTileLocation(c, r))
-                    r ++
-                }
-            }
+            for (let c = 1; c <= gridW; c++) { mergeTiles(grid.colSprites(c), false) }
+            for (let c = 1; c <= gridW; c++) { tilesMoved = moveTiles(grid.colSprites(c), false, true) }
             break
 
         case 6:             // vector is DOWN
-            for (let c = 1; c <= gridW; c++) {
-                for (let cIndex = 0; cIndex <= grid.colSprites(c).length - 2; cIndex++) {       // assuming that indexes in the colSprites array start with 0
-                    mergeTiles(grid.colSprites(c), true)
-                }
-            }
-            for (let c = 1; c <= 8; c++) {
-                let r = gridH - grid.colSprites(c).length + 1
-                for (let sprite of grid.colSprites(c)) {
-                    grid.place(sprite, tiles.getTileLocation(c, r))
-                    r++
-                }
-            }
+            for (let c = 1; c <= gridW; c++) { mergeTiles(grid.colSprites(c), true) }
+            for (let c = 1; c <= gridW; c++) { tilesMoved = moveTiles(grid.colSprites(c), true, true) }
             break
 
         case 9:             // vector is LEFT   
+            for (let r = 1; r <= gridH; r++) { mergeTiles(grid.rowSprites(r), false) }
+            for (let r = 1; r <= gridH; r++) { tilesMoved = moveTiles(grid.rowSprites(r), false, false) }
             break
 
         case 3:             // vector is RIGHT
+            for (let r = 1; r <= gridH; r++) { mergeTiles(grid.rowSprites(r), false) }
+            for (let r = 1; r <= gridH; r++) { tilesMoved = moveTiles(grid.rowSprites(r), true, false) }
             break
     }   
     if (tilesMoved) {
