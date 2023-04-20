@@ -19,24 +19,57 @@ sprites.onCreated(SpriteKind.Player, function (sprite) {
 })
 
 sprites.onDestroyed(SpriteKind.Player, function (sprite) {
-    info.changeScoreBy(sprites.readDataNumber(sprite, "rank"))
+
 })
 
+function mergeTiles(tiles: Sprite[], reversed: boolean) {
+    let cIndex = 0
+    for (let i = 0; i <= tiles.length - 2; i++) {       // assuming that indexes in the colSprites array start with 0
+        switch (reversed) {
+            case false:
+                cIndex = i
+                break
+            case true:
+                cIndex = tiles.length - i - 1
+                break
+        }
+        if (sprites.readDataNumber(tiles[cIndex], "rank") == sprites.readDataNumber(tiles[cIndex + 1], "rank")) {
+            sprites.changeDataNumberBy(tiles[cIndex], "rank", 1)
+            sprites.setDataBoolean(tiles[cIndex], "updated", false)
+            sprites.destroy(tiles[cIndex + 1])
+        }
+    }
+}
+
+function moveTiles(tiles: Sprite[], reversed: boolean, hor: boolean) {
+    let tilesMoved: boolean = false
+    let i = 1
+    for (let sprite of tiles) {
+        let tmpR = sprite.tilemapLocation().row
+        if (tmpR != i) { tilesMoved = true }
+        if (hor) {
+            grid.move(sprite, 0, i - tmpR)
+        } else {
+            grid.move(sprite, i - tmpR, 0)
+        }
+        i++
+    }
+    return tilesMoved
+}
+
 function changeGravityVector(vector: number) {
+    let tilesMoved: boolean = false
     switch (vector) {
         case 0:             // vector is UP
             for (let c = 1; c <= gridW; c++) {
-                for (let cIndex = 0; cIndex <= grid.colSprites(c).length - 2; cIndex ++) {       // assuming that indexes in the colSprites array start with 0
-                    if (sprites.readDataNumber(grid.colSprites(c)[cIndex], "rank") == sprites.readDataNumber(grid.colSprites(c)[cIndex + 1], "rank")) {
-                        sprites.changeDataNumberBy(grid.colSprites(c)[cIndex], "rank", 1)
-                        sprites.setDataBoolean(grid.colSprites(c)[cIndex], "updated", false)
-                        sprites.destroy(grid.colSprites(c)[cIndex + 1])
-                    }
-                }
+                mergeTiles(grid.colSprites(c), false)
             }
-            for (let c = 1; c <= 8; c++) {
+            for (let c = 1; c <= gridW; c++) {
                 let r = 1
-                for (let sprite of grid.colSprites(c)) {        
+                for (let sprite of grid.colSprites(c)) {
+                    let tmpC = sprite.tilemapLocation().column
+                    let tmpR = sprite.tilemapLocation().row
+                    if (tmpC != c || tmpR != r) { tilesMoved = true }        
                     grid.place(sprite, tiles.getTileLocation(c, r))
                     r ++
                 }
@@ -46,17 +79,13 @@ function changeGravityVector(vector: number) {
         case 6:             // vector is DOWN
             for (let c = 1; c <= gridW; c++) {
                 for (let cIndex = 0; cIndex <= grid.colSprites(c).length - 2; cIndex++) {       // assuming that indexes in the colSprites array start with 0
-                    if (sprites.readDataNumber(grid.colSprites(c)[gridH - cIndex], "rank") == sprites.readDataNumber(grid.colSprites(c)[gridH - cIndex + 1], "rank")) {
-                        sprites.changeDataNumberBy(grid.colSprites(c)[gridH - cIndex], "rank", 1)
-                        sprites.setDataBoolean(grid.colSprites(c)[gridH - cIndex], "updated", false)
-                        sprites.destroy(grid.colSprites(c)[gridH - cIndex + 1])
-                    }
+                    mergeTiles(grid.colSprites(c), true)
                 }
             }
             for (let c = 1; c <= 8; c++) {
-                let r = 0
+                let r = gridH - grid.colSprites(c).length + 1
                 for (let sprite of grid.colSprites(c)) {
-                    grid.place(sprite, tiles.getTileLocation(c, gridH - r))
+                    grid.place(sprite, tiles.getTileLocation(c, r))
                     r++
                 }
             }
@@ -67,7 +96,27 @@ function changeGravityVector(vector: number) {
 
         case 3:             // vector is RIGHT
             break
-    }    
+    }   
+    if (tilesMoved) {
+        tilesSprites.push(sprites.create(img`
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+        `, SpriteKind.Player))
+    }
 }
 let tilesSprites: Sprite[] = []
 let gridW = 8
@@ -132,6 +181,7 @@ game.onUpdateInterval(10, function() {
     for (let sprite of tilesSprites) {
         if (!(sprites.readDataBoolean(sprite, "updated"))) {
             sprite.setImage(tilesImages[sprites.readDataNumber(sprite, "rank")])
+            info.changeScoreBy(sprites.readDataNumber(sprite, "rank"))
             sprites.setDataBoolean(sprite, "updated", true)
         }
         if (sprites.readDataNumber(sprite, "rank") == 10) {
