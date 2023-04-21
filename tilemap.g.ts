@@ -38,14 +38,14 @@ namespace myTiles {
 `, [myTiles.transparency16,myTiles.tile1,myTiles.tile2,myTiles.tile3,myTiles.tile4,myTiles.tile5,myTiles.tile6,myTiles.tile7,myTiles.tile8], TileScale.Sixteen);
             case "level2":
             case "level2":return tiles.createTilemap(hex`0a0008000202020202020202020200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001010101010101010101`, img`
+2 2 2 2 2 2 2 2 2 2 
 . . . . . . . . . . 
 . . . . . . . . . . 
 . . . . . . . . . . 
 . . . . . . . . . . 
 . . . . . . . . . . 
 . . . . . . . . . . 
-. . . . . . . . . . 
-. . . . . . . . . . 
+2 2 2 2 2 2 2 2 2 2 
 `, [myTiles.transparency16,myTiles.tile9,myTiles.tile10], TileScale.Sixteen);
         }
         return null;

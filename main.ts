@@ -14,12 +14,11 @@ sprites.onCreated(SpriteKind.Player, function (sprite) {
     let freeCell = freeCells._pickRandom()
 
     sprites.setDataBoolean(sprite, "updated", false)
-    sprites.setDataNumber(sprite, "rank", 0)
+    sprites.setDataNumber(sprite, "rank", Math.randomRange(0, 5))
     grid.place(sprite, tiles.getTileLocation(freeCell % gridW, Math.floor(freeCell / gridW) + 1))
 })
 
 sprites.onDestroyed(SpriteKind.Player, function (sprite) {
-
 })
 
 function seed(count: number) {
@@ -45,78 +44,99 @@ function seed(count: number) {
     }
 }
 
-function mergeTiles(tiles: Sprite[], reversed: boolean) {
-    for (let i = 0; i < tiles.length - 1; i++)
-    {
-        let cIndex = reversed ? tiles.length - i : i
-        let nextIndex = reversed ? cIndex - 1 : cIndex + 1
-        if (sprites.readDataNumber(tiles[cIndex], "rank") == sprites.readDataNumber(tiles[nextIndex], "rank")) 
-        {
-            sprites.changeDataNumberBy(tiles[cIndex], "rank", 1)
-            sprites.setDataBoolean(tiles[cIndex], "updated", false)
-            sprites.destroy(tiles[nextIndex])
+function mergeTiles(segment: Sprite[], reversed: boolean) {
+    let s = " | "
+    for (let i = 0; i < segment.length - 1; i++) {
+        let index = reversed ? segment.length - 1 - i : i
+        let next = reversed ? index - 1 : index + 1
+        s = s + sprites.readDataNumber(segment[index], "rank") + "<>" + sprites.readDataNumber(segment[next], "rank") + " | "
+        if (sprites.readDataNumber(segment[index], "rank") == sprites.readDataNumber(segment[next], "rank")) {
+            sprites.changeDataNumberBy(segment[index], "rank", 1)
+            sprites.setDataBoolean(segment[index], "updated", false)
+            sprites.destroy(segment[next])
         }
     }
+    console.log(s)
 }
 
 function moveTiles(tiles: Sprite[], reversed: boolean, vertical: boolean) {
-    let tilesMoved: boolean = false
-    let pos = reversed ? (vertical ? gridH : gridW) - tiles.length + (vertical ? 0 : 1) : (vertical ? 1 : 0)            // starting point to place tiles
-    for (let sprite of tiles) {
-        let tmpPos = vertical ? sprite.tilemapLocation().row : sprite.tilemapLocation().column 
-        if (tmpPos != pos) { 
-            tilesMoved = true 
-            grid.move(sprite,  (vertical ? 0 : pos - tmpPos), (vertical ? pos - tmpPos : 0))
-        }
-        pos++
-    }
-    return tilesMoved
 }
 
 function changeGravityVector(vector: number) {
-    let tilesMoved: boolean = false
-    switch (vector) {
-        case 0:             // vector is UP
-            for (let c = 1; c <= gridW; c++) { mergeTiles(grid.colSprites(c), false) }
-            for (let c = 1; c <= gridW; c++) { tilesMoved = moveTiles(grid.colSprites(c), false, true) }
-            break
 
-        case 6:             // vector is DOWN
-            for (let c = 1; c <= gridW; c++) { mergeTiles(grid.colSprites(c), true) }
-            for (let c = 1; c <= gridW; c++) { tilesMoved = moveTiles(grid.colSprites(c), true, true) }
-            break
+    console.log("== INITIAL ==")
 
-        case 9:             // vector is LEFT   
-            for (let r = 1; r <= gridH; r++) { mergeTiles(grid.rowSprites(r), false) }
-            for (let r = 1; r <= gridH; r++) { tilesMoved = moveTiles(grid.rowSprites(r), false, false) }
-            break
-
-        case 3:             // vector is RIGHT
-            for (let r = 1; r <= gridH; r++) { mergeTiles(grid.rowSprites(r), false) }
-            for (let r = 1; r <= gridH; r++) { tilesMoved = moveTiles(grid.rowSprites(r), true, false) }
-            break
-    }   
-    if (tilesMoved) {
-        tilesSprites.push(sprites.create(img`
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-        `, SpriteKind.Player))
+    for (let col = 0; col < grid.numColumns(); col++) {
+        let s = "col " + col + ": | "
+        for (let sprite of grid.colSprites(col)) {
+            s = s + sprites.readDataNumber(sprite, "rank") + " | "
+        }
+        console.log(s)
     }
+
+    console.log("----------------")
+
+    for (let row = 0; row < grid.numRows(); row++) {
+        let s = "row " + row + ": | "
+        for (let sprite of grid.rowSprites(row)) {
+            s = s + sprites.readDataNumber(sprite, "rank") + " | "
+        }
+        console.log(s)
+    }
+
+    switch (vector) {
+        case 9:             // LEFT
+            for (let row = 0; row < grid.numRows(); row++) {
+                console.log("row " + row + ":")
+                mergeTiles(grid.rowSprites(row), false)
+            }
+            break
+        
+        case 3:             // RIGHT
+            for (let row = 0; row < grid.numRows(); row++) {
+                console.log("row " + row + ":")
+                mergeTiles(grid.rowSprites(row), true)
+            }
+            break
+        
+        case 0:             // UP
+            for (let col = 0; col < grid.numColumns(); col++) {
+                console.log("col " + col + ":")
+                mergeTiles(grid.colSprites(col), false)
+            }
+            break
+
+        case 6:             // DOWN
+            for (let col = 0; col < grid.numColumns(); col++) {
+                console.log("col " + col + ":")
+                mergeTiles(grid.colSprites(col), true)
+            }
+            break
+
+    }
+
+    console.log("== RESULT ==")
+
+    for (let col = 0; col < grid.numColumns(); col ++) {
+        let s = "col " + col + ": | "
+        for (let sprite of grid.colSprites(col)) {
+            s = s + sprites.readDataNumber(sprite, "rank") + " | "
+        }
+        console.log(s)
+    }
+
+    console.log("----------------")
+
+    for (let row = 0; row < grid.numRows(); row++) {
+        let s = "row " + row + ": | "
+        for (let sprite of grid.rowSprites(row)) {
+            s = s + sprites.readDataNumber(sprite, "rank") + " | "
+        }
+        console.log(s)
+    }
+
 }
+
 let tilesSprites: Sprite[] = []
 let gridW = 10
 let gridH = 6
@@ -138,9 +158,9 @@ tiles.setCurrentTilemap(tilemap`level2`)
 info.setScore(0)
 info.setBorderColor(0)
 info.setBackgroundColor(0)
-info.setFontColor(10)
+info.setFontColor(2)
 
-seed(4)
+seed(20)
 
 game.onUpdateInterval(10, function() {
     for (let sprite of tilesSprites) {
