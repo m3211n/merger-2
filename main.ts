@@ -5,16 +5,20 @@ sprites.onCreated(SpriteKind.Player, function (sprite) {
     for (let i0 = 0; i0 < gridW * gridH; i0++) {
         freeCells.push(i0)
     }
-
-    for (let sprite of tilesSprites) {
+    console.log("== REMOVE OCCUPIED ==")
+    for (let sprite of grid.allSprites()) {
         let spriteCell = (sprite.tilemapLocation().column ) + gridW * (sprite.tilemapLocation().row - 1)
-        freeCells.removeAt(freeCells.indexOf(spriteCell))
+        console.log(freeCells)
+        freeCells.removeElement(spriteCell)
+        console.log("Removing " + spriteCell)
+        console.log(freeCells)
     }
 
     let freeCell = freeCells._pickRandom()
 
     sprites.setDataBoolean(sprite, "updated", false)
     sprites.setDataNumber(sprite, "rank", 0)
+    console.log("New tile location (" + freeCell + "): " + freeCell % gridW + ", " + (Math.floor(freeCell / gridW) + 1))
     grid.place(sprite, tiles.getTileLocation(freeCell % gridW, Math.floor(freeCell / gridW) + 1))
 })
 
