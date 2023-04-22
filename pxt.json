@@ -5,7 +5,8 @@
         "device": "*",
         "Sprite Grid": "github:microsoft/arcade-grid#v1.3.0",
         "arcade-sprite-data": "github:microsoft/arcade-sprite-data#v0.2.1",
-        "Color Fading": "github:jwunderl/pxt-color#v0.2.2"
+        "Color Fading": "github:jwunderl/pxt-color#v0.2.2",
+        "arcade-text": "github:microsoft/arcade-text#v1.3.0"
     },
     "files": [
         "main.ts",
@@ -20,7 +21,7 @@
         "test.ts"
     ],
     "targetVersions": {
-        "target": "1.12.29",
+        "target": "1.12.30",
         "targetId": "arcade"
     },
     "supportedTargets": [
