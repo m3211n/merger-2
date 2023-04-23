@@ -12,12 +12,15 @@ sprites.onCreated(SpriteKind.Player, function (sprite) {
         freeCells.removeElement(spriteCell)
         console.log("Removing " + spriteCell)
         console.log(freeCells)
+        if (freeCells.length == 0) {
+            game.over(false)
+        }
     }
 
     let freeCell = freeCells._pickRandom()
 
     sprites.setDataBoolean(sprite, "updated", false)
-    sprites.setDataNumber(sprite, "rank", 0)
+    sprites.setDataNumber(sprite, "rank", (Math.percentChance(30) ? 1 : 0))
     console.log("New tile location (" + freeCell + "): " + freeCell % gridW + ", " + (Math.floor(freeCell / gridW) + 1))
     grid.place(sprite, tiles.getTileLocation(freeCell % gridW, Math.floor(freeCell / gridW) + 1))
 })
@@ -200,7 +203,7 @@ game.onUpdateInterval(10, function() {
             info.changeScoreBy(sprites.readDataNumber(sprite, "rank"))
             sprites.setDataBoolean(sprite, "updated", true)
         }
-        if (sprites.readDataNumber(sprite, "rank") == 10) {
+        if (sprites.readDataNumber(sprite, "rank") == 11) {
             pause(500)
             game.gameOver(true)
         }
